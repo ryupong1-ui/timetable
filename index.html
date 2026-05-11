@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<title>Book Checker By Ryu XP</title>
+
+<script src="https://unpkg.com/html5-qrcode"></script>
+
+<style>
+body {
+    font-family: Arial;
+    background: #eef2f7;
+    text-align: center;
+    padding: 20px;
+}
+.container {
+    max-width: 600px;
+    margin: auto;
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+}
+select, button {
+    padding: 10px;
+    margin: 5px;
+    width: 90%;
+}
+button {
+    background: #007bff;
+    color: white;
+    border-radius: 6px;
+    border: none;
+}
+.correct { color: green; }
+.wrong { color: red; }
+.info { font-size: 16px; margin-top: 10px; }
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h2>📚 เช็คหนังสือ สร้างโดย Ryu XP</h2>
+
+<select id="day">
+    <option>จันทร์</option>
+    <option>อังคาร</option>
+    <option>พุธ</option>
+    <option>พฤหัสบดี</option>
+    <option>ศุกร์</option>
+</select>
+
+<button onclick="start()">📷 เริ่มสแกน</button>
+
+<div id="reader"></div>
+
+<h3 id="result"></h3>
+<div class="info" id="status"></div>
+
+</div>
+
+<script>
+/* =========================
+   🔥 แก้ตรงนี้ได้เลย
+========================= */
+
+const CONFIG = {
+    "จันทร์": {
+        add: [
+            "9786160551705", // คอม
+        ],
+        remove: [
+            "444" // ประวัติ
+        ]
+    },
+
+    "อังคาร": {
+        add: ["555","666"],
+        remove: ["111"]
+    },
+
+    "พุธ": {
+        add: ["777","888","999"],
+        remove: []
+    },
+
+    "พฤหัสบดี": {
+        add: [
+            "111", // คณิต
+            "222", // วิทย์
+            "333"  // อังกฤษ
+        ],
+        remove: [
+            "444" // ประวัติ
+        ]
+    }
+}
+
+/* ========================= */
+
+let scanned = new Set();
+
+function start() {
+    const day = document.getElementById("day").value;
+    const config = CONFIG[day];
+
+    if (!config) {
+        alert("ยังไม่ได้ตั้งค่า");
+        return;
+    }
+
+    scanned.clear();
+
+    const scanner = new Html5Qrcode("reader");
+
+    scanner.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: 250 },
+        (code) => {
+
+            if (scanned.has(code)) return;
+            scanned.add(code);
+
+            const result = document.getElementById("result");
+
+            if (config.add.includes(code)) {
+                result.innerHTML = "📥 ต้องเอาเข้า ✔";
+                result.className = "correct";
+            } else if (config.remove.includes(code)) {
+                result.innerHTML = "📤 ต้องเอาออก ✔";
+                result.className = "correct";
+            } else {
+                result.innerHTML = "❌ ไม่เกี่ยว";
+                result.className = "wrong";
+            }
+
+            updateStatus(config);
+        }
+    );
+}
+
+function updateStatus(config) {
+    const total = config.add.length;
+    const done = config.add.filter(x => scanned.has(x)).length;
+
+    document.getElementById("status").innerText =
+        `📚 เอาเข้าแล้ว ${done}/${total} เล่ม`;
+}
+</script>
+
+</body>
+</html>
