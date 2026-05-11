@@ -2,7 +2,8 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<title>Book Checker By Ryu XP</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Book Checker by Ryu XP</title>
 
 <script src="https://unpkg.com/html5-qrcode"></script>
 
@@ -11,29 +12,42 @@ body {
     font-family: Arial;
     background: #eef2f7;
     text-align: center;
-    padding: 20px;
+    padding: 10px;
 }
 .container {
-    max-width: 600px;
+    max-width: 500px;
     margin: auto;
     background: white;
-    padding: 20px;
+    padding: 15px;
     border-radius: 12px;
 }
 select, button {
-    padding: 10px;
+    padding: 12px;
     margin: 5px;
-    width: 90%;
+    width: 100%;
+    font-size: 16px;
 }
 button {
     background: #007bff;
     color: white;
-    border-radius: 6px;
+    border-radius: 8px;
     border: none;
 }
 .correct { color: green; }
 .wrong { color: red; }
-.info { font-size: 16px; margin-top: 10px; }
+
+.list {
+    text-align: left;
+    background: #f7f7f7;
+    padding: 10px;
+    border-radius: 8px;
+    margin-top: 10px;
+}
+
+.done {
+    color: green;
+    font-weight: bold;
+}
 </style>
 </head>
 
@@ -41,9 +55,10 @@ button {
 
 <div class="container">
 
-<h2>📚 เช็คหนังสือ สร้างโดย Ryu XP</h2>
+<h2>📚 Book Checker by Ryu XP</h2>
 
-<select id="day">
+<select id="day" onchange="showList()">
+    <option value="">-- เลือกวัน --</option>
     <option>จันทร์</option>
     <option>อังคาร</option>
     <option>พุธ</option>
@@ -51,62 +66,97 @@ button {
     <option>ศุกร์</option>
 </select>
 
+<div id="bookList" class="list"></div>
+
 <button onclick="start()">📷 เริ่มสแกน</button>
 
 <div id="reader"></div>
 
 <h3 id="result"></h3>
-<div class="info" id="status"></div>
+<div id="status"></div>
 
 </div>
 
 <script>
-/* =========================
-   🔥 แก้ตรงนี้ได้เลย
-========================= */
-
 const CONFIG = {
     "จันทร์": {
         add: [
-            "9786160551705", // คอม
+            { code: "9786160551705", name: "คอม" }
         ],
         remove: [
-            "444" // ประวัติ
+            { code: "444", name: "ประวัติ" }
         ]
     },
 
     "อังคาร": {
-        add: ["555","666"],
-        remove: ["111"]
+        add: [
+            { code: "ดดด", name: "Non" }
+        ],
+        remove: [
+            { code: "ดดด", name: "Non" }
+        ]
     },
 
     "พุธ": {
-        add: ["777","888","999"],
-        remove: []
+        add: [
+            { code: "ดดด", name: "Non" }
+        ],
+        remove: [
+            { code: "ดดด", name: "Non" }
+        ]
     },
 
     "พฤหัสบดี": {
         add: [
-            "111", // คณิต
-            "222", // วิทย์
-            "333"  // อังกฤษ
+            { code: "111", name: "คณิต" },
+            { code: "222", name: "วิทย์" },
+            { code: "333", name: "อังกฤษ" }
         ],
         remove: [
-            "444" // ประวัติ
+            { code: "444", name: "ประวัติ" }
+        ]
+    },
+
+    "ศุกร์": {
+        add: [
+            { code: "ดดด", name: "Non" }
+        ],
+        remove: [
+            { code: "ดดด", name: "Non" }
         ]
     }
 }
 
-/* ========================= */
-
 let scanned = new Set();
+
+function showList() {
+    const day = document.getElementById("day").value;
+    const config = CONFIG[day];
+
+    if (!config) {
+        document.getElementById("bookList").innerHTML = "";
+        return;
+    }
+
+    let html = "<b>📥 ต้องเอาเข้า:</b><br>";
+    config.add.forEach(b => {
+        html += `- ${b.name}<br>`;
+    });
+
+    html += "<br><b>📤 ต้องเอาออก:</b><br>";
+    config.remove.forEach(b => {
+        html += `- ${b.name}<br>`;
+    });
+
+    document.getElementById("bookList").innerHTML = html;
+}
 
 function start() {
     const day = document.getElementById("day").value;
     const config = CONFIG[day];
 
     if (!config) {
-        alert("ยังไม่ได้ตั้งค่า");
+        alert("เลือกวันก่อน");
         return;
     }
 
@@ -124,13 +174,18 @@ function start() {
 
             const result = document.getElementById("result");
 
-            if (config.add.includes(code)) {
-                result.innerHTML = "📥 ต้องเอาเข้า ✔";
+            let foundAdd = config.add.find(b => b.code === code);
+            let foundRemove = config.remove.find(b => b.code === code);
+
+            if (foundAdd) {
+                result.innerHTML = `📥 เอาเข้า ✔ (${foundAdd.name})`;
                 result.className = "correct";
-            } else if (config.remove.includes(code)) {
-                result.innerHTML = "📤 ต้องเอาออก ✔";
+            } 
+            else if (foundRemove) {
+                result.innerHTML = `📤 เอาออก ✔ (${foundRemove.name})`;
                 result.className = "correct";
-            } else {
+            } 
+            else {
                 result.innerHTML = "❌ ไม่เกี่ยว";
                 result.className = "wrong";
             }
@@ -141,11 +196,17 @@ function start() {
 }
 
 function updateStatus(config) {
-    const total = config.add.length;
-    const done = config.add.filter(x => scanned.has(x)).length;
+    let html = "<b>สถานะ:</b><br>";
 
-    document.getElementById("status").innerText =
-        `📚 เอาเข้าแล้ว ${done}/${total} เล่ม`;
+    config.add.forEach(b => {
+        if (scanned.has(b.code)) {
+            html += `<span class="done">✔ ${b.name}</span><br>`;
+        } else {
+            html += `⏳ ${b.name}<br>`;
+        }
+    });
+
+    document.getElementById("status").innerHTML = html;
 }
 </script>
 
