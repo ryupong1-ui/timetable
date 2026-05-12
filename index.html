@@ -21,7 +21,7 @@ body {
     padding: 15px;
     border-radius: 12px;
 }
-select, button {
+select, button, input {
     padding: 12px;
     margin: 5px;
     width: 100%;
@@ -53,9 +53,22 @@ button {
 
 <body>
 
+<!-- 🔐 LOGIN SCREEN -->
+<div id="loginBox" style="position:fixed;top:0;left:0;width:100%;height:100%;background:#eef2f7;display:flex;justify-content:center;align-items:center;z-index:9999;">
+    <div style="background:white;padding:20px;border-radius:12px;width:300px;">
+        <h3>ระบบยังไม่เปิดใช้งาน<br>🔐 ใส่รหัสผ่านสำหรับทีมงาน HER</h3>
+        <input type="password" id="password" placeholder="รหัสผ่าน">
+        <button onclick="checkLogin()">เข้าสู่ระบบ</button>
+        <p id="loginError" style="color:red;"></p>
+    </div>
+</div>
+
 <div class="container">
 
-<h2>📚 Book Checker by Ryu XP<br>ตัว Website เหมาะสำหรับคนที่จัดตารางเรียนเป็นประจำ<br>ถ้าพึ่งเริ่มจำให้จัดแบบปกติ 1 วัน และค่อยใช้ Website นี้<br>เพราะจัดแบบเอาวิชาที่ไม่ได้เรียนในวันถัดไปออกแล้วใส่วิชาที่ไม่ได้เรียนในวันก่อนหน้าแต่เรียนในวันถัดไป</h2>
+<button onclick="logout()" style="background:red;">🚪 ออกจากระบบ</button>
+
+<h2>📚 Book Checker by Ryu XP<br>
+ตัว Website เหมาะสำหรับคนที่จัดตารางเรียนเป็นประจำ</h2>
 
 <select id="day" onchange="showList()">
     <option value="">-- เลือกวัน --</option>
@@ -68,7 +81,7 @@ button {
 
 <div id="bookList" class="list"></div>
 
-<button onclick="start()">📷 เริ่มสแกนเพื่อเพิ่มความแม่นยำ</button>
+<button onclick="start()">📷 เริ่มสแกน</button>
 
 <div id="reader"></div>
 
@@ -77,15 +90,29 @@ button {
 
 </div>
 
-<script> 
-//9786165762809 วิทยาศาสตร์ เล่ม 2
-//9786160551705 คอมพิวเตอร์
-//9786160551668 คณิตศาสตร์ เล่ม 2
-//9786160728732 วรรณคดี
-//9786160551590 สังคม
-//9786160551385 ประวัติ
-//9198893462005 New Frontiers อังกฤษ
-//9786160551651 คณิตศาสตร์ เล่ม 1
+<script>
+
+// 🔑 เปลี่ยนรหัสตรงนี้
+const PASSWORD = "supawat182556HER";
+
+// ✅ ตรวจ login (ไม่จำค่า)
+function checkLogin() {
+    const input = document.getElementById("password").value;
+
+    if (input === PASSWORD) {
+        document.getElementById("loginBox").style.display = "none";
+    } else {
+        document.getElementById("loginError").innerText = "❌ รหัสผ่านไม่ถูกต้อง";
+    }
+}
+
+// 🚪 logout (รีโหลดแล้วล็อกทันที)
+function logout() {
+    location.reload();
+}
+
+
+// ================== SYSTEM เดิม ==================
 
 const CONFIG = {
     "จันทร์": {
@@ -105,9 +132,7 @@ const CONFIG = {
             { code: "9786160551590", name: "สังคม"}
         ],
         remove: [
-            { code: "9786160551705", name: "คอมพิวเตอร์" },
-            { code: "", name: "ภาษาไทย" },
-            { code: "", name: "วิทย์" },
+            { code: "9786160551705", name: "คอมพิวเตอร์" }
         ]
     },
 
@@ -124,24 +149,18 @@ const CONFIG = {
     "พฤหัสบดี": {
         add: [
             { code: "", name: "ภาษาไทย" },
-            { code: "9786160551590", name: "สังคม"},
-            { code: "", name: "ประวัติ" }
+            { code: "9786160551590", name: "สังคม"}
         ],
         remove: [
-            { code: "9786160551651", name: "คณิตศาสตร์ เล่ม 1" },
-            { code: "", name: "ดนตรี" }
+            { code: "9786160551651", name: "คณิตศาสตร์ เล่ม 1" }
         ]
     },
 
     "ศุกร์": {
         add: [
-            { code: "9786160551651", name: "คณิตศาสตร์ เล่ม 1" },
-            { code: "", name: "วิทย์" },
-            { code: "", name: "ไทย" }
+            { code: "9786160551651", name: "คณิตศาสตร์ เล่ม 1" }
         ],
-        remove: [
-            { code: "", name: "ประวัติ" },
-        ]
+        remove: []
     }
 }
 
@@ -226,6 +245,7 @@ function updateStatus(config) {
 
     document.getElementById("status").innerHTML = html;
 }
+
 </script>
 
 </body>
